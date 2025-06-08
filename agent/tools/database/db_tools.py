@@ -21,7 +21,7 @@ if not db_url:
 engine = create_engine(db_url)
 
 # Initialize LLM for analysis tools
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
+llm = ChatOpenAI(model="gpt-4-1106-preview", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
 
 @tool
 def get_db_schema_and_tables() -> Dict[str, List[str]]:

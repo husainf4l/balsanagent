@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.agents import create_openai_functions_agent
+from langchain.tools import Tool
 from .tools.database import (
     get_db_schema_and_tables, 
     get_table_definition, 
@@ -12,6 +13,7 @@ from .tools.database import (
     analyze_columns,
     save_summary
 )
+from .tools.fraud_analysis import detect_suspicious_transactions
 from .chat_handler import ChatHandler
 
 # System message
@@ -26,6 +28,7 @@ When analyzing data:
 3. Use analyze_schema and analyze_columns to identify the best columns for your analysis
 4. Execute SQL queries using execute_sql_query to get the data
 5. Save valuable insights using save_summary
+6. Use detect_suspicious_transactions to analyze a table for potentially suspicious (fraudulent) transactions using multiple rules.
 
 Always:
 - Check for data quality issues (missing values, zeros, etc.)
@@ -50,6 +53,7 @@ Available tools:
 - analyze_columns: Identify best columns for analysis
 - execute_sql_query: Run SQL queries
 - save_summary: Save insights to the database
+- detect_suspicious_transactions: Analyze a table for potentially suspicious (fraudulent) transactions using multiple rules.
 
 Please help the user analyze their data and provide insights.
 """
@@ -68,22 +72,27 @@ class ChatManager:
     def __init__(self):
         """Initialize the chat manager with all necessary components."""
         self.llm = ChatOpenAI(
-            model="gpt-4-turbo-preview",
+            model="gpt-4-1106-preview",  # Use GPT-4.1
             temperature=0,
-            max_tokens=4000  # Adjust based on your needs
+            max_tokens=4000  
         )
         
-        # Initialize tools
         self.tools = [
             get_db_schema_and_tables,
             get_table_definition,
             execute_sql_query,
             analyze_schema,
             analyze_columns,
-            save_summary
+            save_summary,
+            Tool(
+                name="detect_suspicious_transactions",
+                func=lambda table, amount_threshold=100000.0: detect_suspicious_transactions(
+                    execute_sql_query, table, amount_threshold
+                ),
+                description="Analyze a table for potentially suspicious (fraudulent) transactions using multiple rules. Parameters: table (str), amount_threshold (float, optional)."
+            )
         ]
         
-        # Create the prompt
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", SYSTEM_PROMPT),
             ("human", "{input}"),
@@ -104,7 +113,6 @@ class ChatManager:
         """Get chat history using the chat handler."""
         return self.chat_handler.get_chat_history(session_id)
 
-# Initialize the chat manager
 chat_manager = ChatManager()
 
 def handle_chat(message: str, session_id: str) -> Dict[str, Any]:
@@ -113,4 +121,4 @@ def handle_chat(message: str, session_id: str) -> Dict[str, Any]:
 
 def get_chat_history(session_id: str) -> List[Dict[str, str]]:
     """Wrapper function to get chat history."""
-    return chat_manager.get_chat_history(session_id) 
+    return chat_manager.get_chat_history(session_id)
