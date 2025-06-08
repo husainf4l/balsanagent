@@ -53,7 +53,7 @@ def get_db_schema_and_tables() -> Dict[str, List[str]]:
         return {}
 
 @tool
-def get_table_definition(schema: str, table: str) -> List[Dict[str, Any]]:
+def get_table_definition(schema_name: str, table: str) -> List[Dict[str, Any]]:
     """Get the definition of a specific table including column names and types."""
     try:
         with engine.connect() as conn:
@@ -64,7 +64,7 @@ def get_table_definition(schema: str, table: str) -> List[Dict[str, Any]]:
                 is_nullable,
                 column_default
             FROM information_schema.columns
-            WHERE table_schema = '{schema}'
+            WHERE table_schema = '{schema_name}'
             AND table_name = '{table}'
             ORDER BY ordinal_position
             """)

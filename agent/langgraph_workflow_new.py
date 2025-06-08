@@ -99,23 +99,20 @@ class BusinessAdvisorWorkflow:
             )
         ]
         
-        # Initialize PostgreSQL checkpointer first
-        try:
-            self.checkpointer_ctx = get_postgres_checkpointer()
-            self.checkpointer = self.checkpointer_ctx.__enter__()
-            logger.info("PostgreSQL checkpointer initialized successfully")
-        except Exception as e:
-            logger.error(f"Failed to initialize PostgreSQL checkpointer: {e}")
-            self.checkpointer = None
-            self.checkpointer_ctx = None
-        
         # Create the agent with LangGraph's create_react_agent
         self.agent = create_react_agent(
             model=self.llm,
             tools=self.tools,
-            prompt=SYSTEM_PROMPT,
-            checkpointer=self.checkpointer
+            state_modifier=SystemMessage(content=SYSTEM_PROMPT)
         )
+        
+        # Initialize PostgreSQL checkpointer
+        try:
+            self.checkpointer = get_postgres_checkpointer()
+            logger.info("PostgreSQL checkpointer initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize PostgreSQL checkpointer: {e}")
+            self.checkpointer = None
     
     async def handle_chat(self, message: str, session_id: str) -> Dict[str, Any]:
         """Handle chat message using LangGraph workflow."""
@@ -197,9 +194,6 @@ class BusinessAdvisorWorkflow:
 
 # Create global instance
 workflow = BusinessAdvisorWorkflow()
-
-# Export the graph for LangGraph Studio
-graph = workflow.agent
 
 def handle_chat(message: str, session_id: str) -> Dict[str, Any]:
     """Wrapper function to handle chat messages."""

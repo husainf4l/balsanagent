@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "business_advisor": "agent.studio_workflow:graph"
+  },
+  "env": ".env"
+}
