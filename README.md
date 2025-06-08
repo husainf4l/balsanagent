@@ -14,6 +14,7 @@ This is a LangGraph implementation of a multilingual business and financial advi
 ## Setup
 
 ### Prerequisites
+
 - Python 3.8+
 - PostgreSQL database
 - OpenAI API key
@@ -21,21 +22,26 @@ This is a LangGraph implementation of a multilingual business and financial advi
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone git@github.com:husainf4l/balsanagent.git
 cd balsanagent
 ```
 
 2. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 ```
+
 Then edit `.env` and fill in your actual values:
+
 ```
 OPENAI_API_KEY=your_openai_api_key_here
 POSTGRES_DB=balsanaiagent
@@ -48,9 +54,10 @@ DEBUG_MODE=false
 ```
 
 4. Database Setup:
-Make sure your PostgreSQL database is running and accessible with the credentials provided in the environment variables.
+   Make sure your PostgreSQL database is running and accessible with the credentials provided in the environment variables.
 
 5. Test the setup:
+
 ```bash
 python check_env.py
 ```
@@ -99,12 +106,16 @@ print(response)
 ### Main Functions
 
 #### `handle_chat(message: str) -> str`
+
 Main entry point for processing user queries.
+
 - **Parameters**: `message` - User query in Arabic or English
 - **Returns**: AI-generated response with business insights
 
 #### `process_input(input_text: str) -> str`
+
 Core workflow processing function.
+
 - **Parameters**: `input_text` - Raw user input
 - **Returns**: Processed response with data analysis
 
@@ -179,11 +190,7 @@ This project is proprietary software for Al Balsan Group.
 
 ## Support
 
-For technical support or questions, contact the development team.
-3. Query the database for relevant information
-4. Provide business insights and recommendations
-5. Respond in the same language as the input
-6. Store chat history in the database
+For technical support or questions, contact the development team. 3. Query the database for relevant information 4. Provide business insights and recommendations 5. Respond in the same language as the input 6. Store chat history in the database
 
 ## Notes
 
@@ -191,4 +198,4 @@ For technical support or questions, contact the development team.
 - Data may be incomplete or unvalidated
 - All responses include a prototype disclaimer when appropriate
 - The system uses GPT-4 for natural language processing
-- Chat history is persisted in PostgreSQL for context maintenance 
+- Chat history is persisted in PostgreSQL for context maintenance

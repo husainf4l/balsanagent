@@ -1,14 +1,9 @@
 import os
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Any
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-from langchain.schema import HumanMessage, AIMessage
 from langchain.agents import create_openai_functions_agent, AgentExecutor
-from langchain.tools import tool
-import re
-from nodes.schema_node import process_schema
-from nodes.analysis_node import process_analysis
 from tools.db_tools import get_db_schema_and_tables, get_table_definition, execute_sql_query
 from tools.llm_tools import analyze_schema, analyze_columns
 from tools.summary_tools import save_summary
@@ -29,12 +24,26 @@ You are a multilingual business and financial advisor connected to a PostgreSQL 
 You are assisting the company owner directly hajj abu mohammad. Your mission is to provide not just data, but actionable business insight, financial guidance, and strategic recommendations. You are operating in a prototype phase with sample, incomplete, and unvalidated datasets. Be transparent about prototype limitations.
 
 When analyzing data:
-- Always check for data quality issues (missing values, zeros, etc.)
+1. First, get the database schema and tables using get_db_schema_and_tables
+2. For relevant tables, get their definitions using get_table_definition
+3. Use analyze_schema and analyze_columns to identify the best columns for your analysis
+4. Execute SQL queries using execute_sql_query to get the data
+5. Save valuable insights using save_summary
+
+Always:
+- Check for data quality issues (missing values, zeros, etc.)
 - Provide period-specific comparisons when requested
 - Include actionable business advice
-- Save valuable insights to the summaries table
 - Add disclaimers for prototype data
 - Respond in the same language as the user's query
+
+Available tools:
+- get_db_schema_and_tables: Get all schemas and tables
+- get_table_definition: Get column definitions for a specific table
+- analyze_schema: Analyze schema to find relevant tables
+- analyze_columns: Identify best columns for analysis
+- execute_sql_query: Run SQL queries
+- save_summary: Save insights to the database
 
 Please help the user analyze their data and provide insights.
 """
@@ -45,36 +54,6 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}"),
     ("ai", "{agent_scratchpad}"),
 ])
-
-def process_input(input_text: str) -> str:
-    """Process user input and return a response."""
-    try:
-        # print("\n=== Starting Workflow Analysis ===")
-        # print(f"Input query: {input_text}")
-        
-        # # Detect language
-        is_arabic = any(ord(c) > 127 for c in input_text)
-        # print(f"Language detected: {'Arabic' if is_arabic else 'English'}")
-        
-        # Extract years and periods from query
-        years = re.findall(r'20\d{2}', input_text)
-        periods = re.findall(r'(?:January|February|March|April|May|June|July|August|September|October|November|December)(?:\s*-\s*(?:January|February|March|April|May|June|July|August|September|October|November|December))?', input_text, re.IGNORECASE)
-        # print(f"Extracted years: {years}")
-        # print(f"Extracted periods: {periods}")
-        
-        # Process schema discovery and analysis
-        sales_tables = process_schema(input_text)
-        
-        if not sales_tables:
-            print("\n❌ No suitable sales tables found after all iterations")
-            return "No suitable sales tables found in the database after multiple attempts."
-        
-        # Process analysis
-        return process_analysis(sales_tables, years, periods)
-    
-    except Exception as e:
-        print(f"\n❌ Error: {str(e)}")
-        return f"Error processing input: {str(e)}"
 
 # Create the agent with all tools
 tools = [
@@ -92,13 +71,8 @@ agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 def handle_chat(message: str) -> str:
     """Handle a chat message and return a response."""
     try:
-        # Process the input using our custom logic
-        response = process_input(message)
-        
-        # If our custom logic doesn't find a suitable response, use the agent
-        if "Could not find suitable columns" in response or "No sales-related tables" in response:
-            response = agent_executor.invoke({"input": message})["output"]
-        
+        # Let the agent handle everything
+        response = agent_executor.invoke({"input": message})["output"]
         return response
     except Exception as e:
         return f"Error: {str(e)}" 
