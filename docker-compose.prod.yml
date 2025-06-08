@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend Service
+  ai-advisor-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    ports:
+      - "8000:8000"  # Expose on all interfaces for NestJS to access
+    environment:
+      - ENVIRONMENT=production
+      - STREAMING_ENABLED=true
+      - STREAMING_DELAY=0.05
+      - MAX_CONCURRENT_STREAMS=100
+      - LOG_LEVEL=info
+      # Environment variables - set these on your server
+      - DATABASE_URL=${DATABASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped

@@ -1,7 +1,11 @@
 langgraph==0.4.8
-langgraph-checkpoint-postgres==0.1.0
+langgraph-checkpoint-postgres==2.0.21
 langchain==0.3.25
 langchain-openai==0.3.21
 langchain-postgres==0.0.14
 psycopg2-binary==2.9.10
-python-dotenv==1.1.0 
+python-dotenv==1.1.0
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+requests==2.32.3 
